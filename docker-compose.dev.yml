@@ -4,24 +4,27 @@ services:
   backend:
     build:
       context: .
-      dockerfile: docker/backend/dev.Dockerfile
+      dockerfile: docker/backend/Dockerfile.dev
     container_name: crud_backend
     restart: unless-stopped
     volumes:
       - .:/var/www/html
       - ./docker/backend/php.ini:/usr/local/etc/php/conf.d/local.ini
+    environment:
+      PHP_CLI_SERVER_WORKERS: ${PHP_CLI_SERVER_WORKERS}
     networks:
       - app-network
     depends_on:
-      - mysql
+      db:
+        condition: service_healthy
 
-  mysql:
+  db:
     image: mysql:8.0
     container_name: crud_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -29,6 +32,11 @@ services:
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   nginx:
     image: nginx:alpine

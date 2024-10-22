@@ -12,22 +12,28 @@ services:
     networks:
       - app-network
     depends_on:
-      - mysql
+      db:
+        condition: service_healthy
 
-  mysql:
+  db:
     image: mysql:8.0
-    container_name: crud_mysql_prod
+    container_name: crud_mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   nginx:
     image: nginx:alpine
