@@ -31,13 +31,13 @@ build-prod: ## Build для production
 	docker-compose -f docker-compose.prod.yml up --build
 	@echo '${GREEN}Production среда запущена${RESET}'
 
-dev: ## Запуск в режиме разработки
-	docker-compose -f docker-compose.dev.yml up -d
+start-dev: ## Запуск в dev
+	docker-compose -f docker-compose.dev.yml up --remove-orphans
 	@echo '${GREEN}Среда разработки запущена${RESET}'
 	@echo '${YELLOW}Приложение доступно на http://localhost:8000${RESET}'
 
-prod: ## Запуск в production
-	docker-compose -f docker-compose.prod.yml up -d
+start-prod: ## Запуск в production
+	docker-compose -f docker-compose.prod.yml up --remove-orphans
 	@echo '${GREEN}Production среда запущена${RESET}'
 
 down: ## Остановка контейнеров
@@ -65,11 +65,14 @@ migrate-refresh: ## Пересоздание базы данных и запус
 	php artisan migrate:fresh --seed
 	@echo '${GREEN}База данных пересоздана${RESET}'
 
-logs: ## Просмотр логов
+logs-dev: ## Просмотр логов dev
 	docker-compose -f docker-compose.dev.yml logs -f
 
-shell: ## Доступ к shell контейнера php
+logs-prod: ## Просмотр логов prod
+	docker-compose -f docker-compose.prod.yml logs -f
+
+shell-dev: ## Доступ к shell dev контейнера php
 	docker-compose -f docker-compose.dev.yml exec backend bash
 
-restart: down dev ## Перезапуск контейнеров
-	@echo '${GREEN}Контейнеры перезапущены${RESET}'
+shell-prod: ## Доступ к shell dev контейнера php
+	docker-compose -f docker-compose.prod.yml exec backend bash
