@@ -1,4 +1,4 @@
-.PHONY: help install build-dev build-prod dev prod down clear cache-clear migrate migrate-refresh logs shell npm-dev npm-build test lint docker-clean
+.PHONY: help install build-dev build-prod start-dev start-prod down clear cache-clear migrate migrate-refresh logs-dev logs-prod shell-dev shell-prod npm-dev npm-build
 
 # Цвета для вывода
 GREEN  := $(shell tput -Txterm setaf 2)
@@ -16,10 +16,10 @@ help: ## Показать эту справку
 
 install: ## Первоначальная установка проекта
 	@echo '${GREEN}Установка зависимостей...${RESET}'
-	composer install
-	npm install
-	cp .env.example .env
-	php artisan key:generate
+	docker-compose -f docker-compose.dev.yml exec backend composer install
+	docker-compose -f docker-compose.dev.yml exec backend npm install
+	docker-compose -f docker-compose.dev.yml exec backend cp .env.example .env
+	docker-compose -f docker-compose.dev.yml exec backend php artisan key:generate
 	@echo '${GREEN}Установка завершена${RESET}'
 
 build-dev: ## Build для разработки
@@ -45,24 +45,24 @@ down: ## Остановка контейнеров
 	docker-compose -f docker-compose.prod.yml down
 	@echo '${GREEN}Контейнеры остановлены${RESET}'
 
-clear: ## Очистка всех кешей и временных файлов
-	php artisan cache:clear
-	php artisan config:clear
-	php artisan route:clear
-	php artisan view:clear
-	php artisan optimize:clear
+clear: ## Очистка всех кешей и временных файлов через контейнер
+	docker-compose -f docker-compose.dev.yml exec backend php artisan cache:clear
+	docker-compose -f docker-compose.dev.yml exec backend php artisan config:clear
+	docker-compose -f docker-compose.dev.yml exec backend php artisan route:clear
+	docker-compose -f docker-compose.dev.yml exec backend php artisan view:clear
+	docker-compose -f docker-compose.dev.yml exec backend php artisan optimize:clear
 	@echo '${GREEN}Кеш очищен${RESET}'
 
-cache-clear: ## Очистка только кеша
-	php artisan cache:clear
+cache-clear: ## Очистка только кеша через контейнер
+	docker-compose -f docker-compose.dev.yml exec backend php artisan cache:clear
 	@echo '${GREEN}Кеш очищен${RESET}'
 
-migrate: ## Запуск миграций
-	php artisan migrate
+migrate: ## Запуск миграций через контейнер
+	docker-compose -f docker-compose.dev.yml exec backend php artisan migrate
 	@echo '${GREEN}Миграции выполнены${RESET}'
 
-migrate-refresh: ## Пересоздание базы данных и запуск миграций
-	php artisan migrate:fresh --seed
+migrate-refresh: ## Пересоздание базы данных и запуск миграций через контейнер
+	docker-compose -f docker-compose.dev.yml exec backend php artisan migrate:fresh --seed
 	@echo '${GREEN}База данных пересоздана${RESET}'
 
 logs-dev: ## Просмотр логов dev
@@ -74,5 +74,5 @@ logs-prod: ## Просмотр логов prod
 shell-dev: ## Доступ к shell dev контейнера php
 	docker-compose -f docker-compose.dev.yml exec backend bash
 
-shell-prod: ## Доступ к shell dev контейнера php
+shell-prod: ## Доступ к shell prod контейнера php
 	docker-compose -f docker-compose.prod.yml exec backend bash

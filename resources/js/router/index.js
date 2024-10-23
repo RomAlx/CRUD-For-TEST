@@ -6,7 +6,8 @@ import UserEdit from '../components/users/UserEdit.vue';
 const routes = [
     {
         path: '/',
-        redirect: '/users'
+        name: 'home',
+        component: UserList
     },
     {
         path: '/users',
