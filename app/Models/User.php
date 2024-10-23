@@ -2,47 +2,51 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
-class User extends Authenticatable
+class User extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected static function boot()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        parent::boot();
+
+        static::created(function ($user) {
+            Log::info('User created', [
+                'id' => $user->id,
+                'email' => $user->email,
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+        });
+
+        static::updated(function ($user) {
+            Log::info('User updated', [
+                'id' => $user->id,
+                'changes' => $user->getChanges(),
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+        });
+
+        static::deleted(function ($user) {
+            Log::info('User deleted', [
+                'id' => $user->id,
+                'email' => $user->email,
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+        });
     }
 }
