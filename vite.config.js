@@ -29,5 +29,14 @@ export default defineConfig({
             '@': '/resources/js',
             '~': '/resources/js/components'
         }
+    },
+    build: {
+        manifest: true,
+        outDir: 'public/build',
+        rollupOptions: {
+            output: {
+                manualChunks: undefined
+            }
+        }
     }
 });
